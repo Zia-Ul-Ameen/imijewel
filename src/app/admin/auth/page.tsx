@@ -39,9 +39,14 @@ export default function AdminAuthPage() {
             <div className="w-full max-w-md">
                 {/* Logo */}
                 <div className="text-center mb-8">
-                    <h1 className="text-4xl font-black text-white tracking-tight">
-                        IMI<span className="text-rose-400">JEWEL</span>
-                    </h1>
+                    <div className="flex flex-col -space-y-1 group">
+                            <span className="text-2xl font-medium font-rethink text-gold tracking-wider transition-transform group-hover:scale-105">
+                                IMIJEWEL
+                            </span>
+                            <span className="text-[8px] md:text-[10px] font-sans font-medium tracking-[0.2em] text-gold/80 uppercase">
+                                Premium Collections
+                            </span>
+                    </div>
                     <p className="text-zinc-400 mt-2 text-sm">Admin Panel</p>
                 </div>
 

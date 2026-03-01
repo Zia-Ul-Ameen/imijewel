@@ -27,6 +27,7 @@ export default function CategoryManager() {
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [formData, setFormData] = useState({ name: '', slug: '', image: '', imageFileId: '', order: 0 });
     const [submitting, setSubmitting] = useState(false);
+    const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
 
     const fetchCategories = async () => {
         try {
@@ -50,6 +51,7 @@ export default function CategoryManager() {
     }, []);
 
     const handleOpenDialog = (category?: Category) => {
+        setRemovedImageIds([]);
         if (category) {
             setEditingCategory(category);
             setFormData({ name: category.name, slug: category.slug, image: category.image || '', imageFileId: category.imageFileId || '', order: category.order });
@@ -83,9 +85,21 @@ export default function CategoryManager() {
 
             if (!res.ok) throw new Error('Failed to save category');
 
+            // Cleanup removed images from ImageKit
+            if (removedImageIds.length > 0) {
+                await Promise.all(removedImageIds.map(fileId =>
+                    fetch('/api/imagekit-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileId }),
+                    })
+                )).catch(err => console.error('Image cleanup failed:', err));
+            }
+
             toast.success(`Category ${editingCategory ? 'updated' : 'created'} successfully`);
             setDialogOpen(false);
             fetchCategories();
+            setRemovedImageIds([]);
         } catch (error) {
             toast.error('Error saving category');
         } finally {
@@ -100,6 +114,7 @@ export default function CategoryManager() {
             if (imageFileId) {
                 await fetch('/api/imagekit-delete', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fileId: imageFileId }),
                 });
             }
@@ -228,7 +243,12 @@ export default function CategoryManager() {
                                         <Image src={formData.image} alt="Preview" fill className="object-cover" />
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, image: '', imageFileId: '' }))}
+                                            onClick={() => {
+                                                if (formData.imageFileId) {
+                                                    setRemovedImageIds(prev => [...prev, formData.imageFileId]);
+                                                }
+                                                setFormData(prev => ({ ...prev, image: '', imageFileId: '' }));
+                                            }}
                                             className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg"
                                         >
                                             <Trash2 className="w-3 h-3" />

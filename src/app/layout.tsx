@@ -35,16 +35,36 @@ export const metadata: Metadata = {
 };
 
 import { Navbar } from "@/components/home/Navbar";
+import { db } from "@/lib/db";
+import { categories as categorySchema, brands as brandSchema } from "@/lib/schema";
+import { asc } from "drizzle-orm";
+import StoreHydration from "@/components/providers/StoreHydration";
 
-export default function RootLayout({
+async function getInitialData() {
+  try {
+    const [categories, brands] = await Promise.all([
+      db.select().from(categorySchema).orderBy(asc(categorySchema.order)),
+      db.select().from(brandSchema).orderBy(asc(brandSchema.name)),
+    ]);
+    return { categories, brands };
+  } catch (error) {
+    console.error("Error fetching initial data for layout:", error);
+    return { categories: [], brands: [] };
+  }
+}
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { categories, brands } = await getInitialData();
+
   return (
     <html lang="en">
       <body className={`${albertSans.variable} ${rethinkSans.variable} antialiased font-albert`}>
         <Providers>
+          <StoreHydration categories={categories} brands={brands} />
           <Navbar />
           {children}
         </Providers>

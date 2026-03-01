@@ -20,9 +20,9 @@ export default function DashboardPage() {
             fetch('/api/hero-content/all').then(r => r.json()),
             fetch('/api/categories').then(r => r.json()),
             fetch('/api/brands').then(r => r.json()),
-        ]).then(([products, hero, cats, brands]) => {
+        ]).then(([productsData, hero, cats, brands]) => {
             setStats({
-                products: products?.products?.length || 0,
+                products: productsData?.pagination?.total || 0,
                 heroSlides: Array.isArray(hero) ? hero.length : 0,
                 categories: Array.isArray(cats) ? cats.length : 0,
                 brands: Array.isArray(brands) ? brands.length : 0,

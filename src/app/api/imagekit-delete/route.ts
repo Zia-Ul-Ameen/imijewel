@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
   const urlEndpoint = process.env.NEXT_PUBLIC_IMAGEKIT_URL;
 
@@ -28,7 +34,7 @@ export async function POST(request: NextRequest) {
       // Extracting path from URL
       const urlObj = new URL(url);
       path = urlObj.pathname;
-      
+
       // If urlEndpoint is provided, remove its pathname prefix from the url's pathname
       if (urlEndpoint) {
         try {
@@ -50,7 +56,7 @@ export async function POST(request: NextRequest) {
       if (!path.startsWith('/')) {
         path = '/' + path;
       }
-      
+
       // Search for file by path to get fileId
       // We use searchQuery which is more reliable for finding a specific file by path
       const query = `path = "${path}"`;
@@ -62,7 +68,7 @@ export async function POST(request: NextRequest) {
           },
         }
       );
-      
+
       let files = await searchResponse.json();
 
       // Fallback: if searchQuery fails, try to split into folder and name

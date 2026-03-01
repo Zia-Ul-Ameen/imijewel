@@ -57,10 +57,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 )}
             >
                 {/* Logo */}
-                <div className="h-16 flex items-center justify-between px-6 border-b border-white/5">
+                <div className="flex items-center justify-start px-6 border-b border-white/5">
                     <Link href="/admin/dashboard" className="text-xl font-black text-white">
-                        IMI<span className="text-rose-400">JEWEL</span>
-                        <span className="ml-2 text-[10px] font-medium text-zinc-500 uppercase tracking-widest">Admin</span>
+                        <div className="text-center my-2.5">
+                            <div className="flex flex-col -space-y-1 group">
+                                <span className="text-2xl font-medium font-rethink text-rose-400 tracking-wider transition-transform group-hover:scale-105">
+                                    IMIJEWEL
+                                </span>
+                                <span className="text-[8px] md:text-[10px] font-sans font-medium tracking-[0.2em] text-rose-400/80 uppercase">
+                                    Premium Collections
+                                </span>
+                            </div>
+                        </div>
                     </Link>
                     <button className="lg:hidden text-zinc-400" onClick={() => setSidebarOpen(false)}>
                         <X className="w-5 h-5" />
@@ -68,7 +76,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+                <nav className="flex-1 p-3 space-y-1 overflow-y-auto pt-6">
                     {navLinks.map(({ href, label, icon: Icon }) => {
                         const isActive = pathname === href || pathname.startsWith(href + '/');
                         return (

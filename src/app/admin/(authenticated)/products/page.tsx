@@ -57,6 +57,7 @@ export default function ProductsPage() {
     const [search, setSearch] = useState('');
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -114,6 +115,7 @@ export default function ProductsPage() {
     }, []);
 
     const handleOpenDialog = (product?: Product) => {
+        setRemovedImageIds([]);
         if (product) {
             setEditingProduct(product);
             setFormData({
@@ -181,9 +183,21 @@ export default function ProductsPage() {
 
             if (!res.ok) throw new Error('Failed to save product');
 
+            // Cleanup removed images from ImageKit
+            if (removedImageIds.length > 0) {
+                await Promise.all(removedImageIds.map(fileId =>
+                    fetch('/api/imagekit-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileId }),
+                    })
+                )).catch(err => console.error('Image cleanup failed:', err));
+            }
+
             toast.success(`Product ${editingProduct ? 'updated' : 'created'} successfully`);
             setDialogOpen(false);
             fetchProducts();
+            setRemovedImageIds([]);
         } catch (error) {
             toast.error('Error saving product');
         } finally {
@@ -199,6 +213,7 @@ export default function ProductsPage() {
             await Promise.all(images.map(img =>
                 fetch('/api/imagekit-delete', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fileId: img.fileId }),
                 })
             ));
@@ -532,7 +547,10 @@ export default function ProductsPage() {
                                         <Image src={img.url} alt={`Product ${idx}`} fill className="object-cover" />
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(p => ({ ...p, images: p.images.filter(i => i.fileId !== img.fileId) }))}
+                                            onClick={() => {
+                                                setRemovedImageIds(prev => [...prev, img.fileId]);
+                                                setFormData(p => ({ ...p, images: p.images.filter(i => i.fileId !== img.fileId) }));
+                                            }}
                                             className="absolute top-1 right-1 p-1.5 bg-red-500 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />

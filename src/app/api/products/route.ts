@@ -60,7 +60,18 @@ export async function GET(request: Request) {
             ? await query.where(and(...conditions)).orderBy(desc(products.createdAt)).limit(limit).offset(offset)
             : await query.orderBy(desc(products.createdAt)).limit(limit).offset(offset);
 
-        return NextResponse.json({ products: data, page, limit });
+        const totalResult = await db.select({ count: sql<number>`count(*)` }).from(products).where(and(...conditions));
+        const total = totalResult[0]?.count || 0;
+
+        return NextResponse.json({
+            products: data,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        });
     } catch (error) {
         console.error('GET /api/products error:', error);
         return NextResponse.json({ error: 'Failed to fetch products' }, { status: 500 });

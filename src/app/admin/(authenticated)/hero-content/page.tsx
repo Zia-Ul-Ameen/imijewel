@@ -18,7 +18,7 @@ interface HeroSlide {
     title: string;
     description?: string | null;
     image: string;
-    imageFileId: string;
+    imagekitFileId: string;
     brandName?: string | null;
     exploreLink?: string | null;
     isActive: boolean;
@@ -34,13 +34,14 @@ export default function HeroContentPage() {
         title: '',
         description: '',
         image: '',
-        imageFileId: '',
+        imagekitFileId: '',
         brandName: '',
         exploreLink: '',
         isActive: true,
         order: 0,
     });
     const [submitting, setSubmitting] = useState(false);
+    const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
 
     const fetchSlides = async () => {
         try {
@@ -59,13 +60,14 @@ export default function HeroContentPage() {
     }, []);
 
     const handleOpenDialog = (slide?: HeroSlide) => {
+        setRemovedImageIds([]);
         if (slide) {
             setEditingSlide(slide);
             setFormData({
                 title: slide.title,
                 description: slide.description || '',
                 image: slide.image,
-                imageFileId: slide.imageFileId,
+                imagekitFileId: slide.imagekitFileId,
                 brandName: slide.brandName || '',
                 exploreLink: slide.exploreLink || '',
                 isActive: slide.isActive,
@@ -77,7 +79,7 @@ export default function HeroContentPage() {
                 title: '',
                 description: '',
                 image: '',
-                imageFileId: '',
+                imagekitFileId: '',
                 brandName: '',
                 exploreLink: '',
                 isActive: true,
@@ -106,9 +108,21 @@ export default function HeroContentPage() {
 
             if (!res.ok) throw new Error('Failed to save slide');
 
+            // Cleanup removed images from ImageKit
+            if (removedImageIds.length > 0) {
+                await Promise.all(removedImageIds.map(fileId =>
+                    fetch('/api/imagekit-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileId }),
+                    })
+                )).catch(err => console.error('Image cleanup failed:', err));
+            }
+
             toast.success(`Slide ${editingSlide ? 'updated' : 'created'} successfully`);
             setDialogOpen(false);
             fetchSlides();
+            setRemovedImageIds([]);
         } catch (error) {
             toast.error('Error saving slide');
         } finally {
@@ -116,14 +130,15 @@ export default function HeroContentPage() {
         }
     };
 
-    const handleDelete = async (id: string, imageFileId: string) => {
+    const handleDelete = async (id: string, imagekitFileId: string) => {
         if (!confirm('Are you sure you want to delete this slide?')) return;
 
         try {
             // Delete from ImageKit
             await fetch('/api/imagekit-delete', {
                 method: 'POST',
-                body: JSON.stringify({ fileId: imageFileId }),
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ fileId: imagekitFileId }),
             });
 
             const res = await fetch(`/api/hero-content/${id}`, { method: 'DELETE' });
@@ -203,7 +218,7 @@ export default function HeroContentPage() {
                                             <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(slide)}>
                                                 <Edit className="w-4 h-4" />
                                             </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(slide.id, slide.imageFileId)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
+                                            <Button variant="ghost" size="icon" onClick={() => handleDelete(slide.id, slide.imagekitFileId)} className="text-red-500 hover:text-red-600 hover:bg-red-50">
                                                 <Trash2 className="w-4 h-4" />
                                             </Button>
                                         </div>
@@ -287,14 +302,19 @@ export default function HeroContentPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Slide Image (1920x1080 recommended)</Label>
+                            <Label>Slide Image (aspect-[7/3] recommended)</Label>
                             <div className="flex flex-col gap-4">
                                 {formData.image ? (
                                     <div className="relative aspect-[16/9] w-full rounded-xl border border-zinc-200 overflow-hidden group">
                                         <Image src={formData.image} alt="Preview" fill className="object-cover" />
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, image: '', imageFileId: '' }))}
+                                            onClick={() => {
+                                                if (formData.imagekitFileId) {
+                                                    setRemovedImageIds(prev => [...prev, formData.imagekitFileId]);
+                                                }
+                                                setFormData(prev => ({ ...prev, image: '', imagekitFileId: '' }));
+                                            }}
                                             className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -304,12 +324,14 @@ export default function HeroContentPage() {
                                     <div className="aspect-[16/9] w-full rounded-xl border-2 border-dashed border-zinc-200 flex flex-col items-center justify-center bg-zinc-50 hover:bg-zinc-100 transition-colors cursor-pointer relative overflow-hidden">
                                         <IKUpload
                                             fileName="hero-slide.jpg"
+                                            publicKey={process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY}
+                                            urlEndpoint={process.env.NEXT_PUBLIC_IMAGEKIT_URL}
                                             onError={(err) => {
                                                 toast.error('Upload failed');
                                                 console.error(err);
                                             }}
                                             onSuccess={(res) => {
-                                                setFormData(prev => ({ ...prev, image: res.url, imageFileId: res.fileId }));
+                                                setFormData(prev => ({ ...prev, image: res.url, imagekitFileId: res.fileId }));
                                                 toast.success('Image uploaded');
                                             }}
                                             className="absolute inset-0 opacity-0 cursor-pointer"

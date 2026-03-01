@@ -127,17 +127,19 @@ export default function CartPage() {
                                         className="bg-white rounded-2xl border border-zinc-100 p-4 flex gap-4 shadow-sm"
                                     >
                                         {/* Image */}
-                                        <div className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-zinc-50">
+                                        <Link href={`/product/${item.id}`} className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-zinc-50 hover:opacity-80 transition-opacity">
                                             {item.image ? (
                                                 <Image src={item.image} alt={item.name} fill className="object-cover" />
                                             ) : (
                                                 <div className="absolute inset-0 flex items-center justify-center text-2xl">💎</div>
                                             )}
-                                        </div>
+                                        </Link>
 
                                         {/* Details */}
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-semibold text-zinc-900 text-sm line-clamp-2">{item.name}</h3>
+                                            <Link href={`/product/${item.id}`}>
+                                                <h3 className="font-semibold text-zinc-900 text-sm line-clamp-2 hover:text-gold transition-colors">{item.name}</h3>
+                                            </Link>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="text-base font-black text-zinc-900">₹{(price * item.quantity).toLocaleString()}</span>
                                                 {item.offerPrice && (
@@ -185,7 +187,9 @@ export default function CartPage() {
                                 <div className="space-y-2 text-sm border-b border-zinc-100 pb-4 mb-4">
                                     {cart.map((item) => (
                                         <div key={item.id} className="flex justify-between text-zinc-600">
-                                            <span className="line-clamp-1 flex-1 pr-2">{item.name} ×{item.quantity}</span>
+                                            <Link href={`/product/${item.id}`} className="line-clamp-1 flex-1 pr-2 hover:text-gold transition-colors">
+                                                {item.name} ×{item.quantity}
+                                            </Link>
                                             <span className="shrink-0 font-medium">
                                                 ₹{((item.offerPrice ?? item.price) * item.quantity).toLocaleString()}
                                             </span>

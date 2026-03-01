@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# IMIJEWEL - Premium Jewelry E-commerce
 
-## Getting Started
+A modern, high-end e-commerce platform for premium jewelry, built with Next.js 15, Tailwind CSS, and Neon DB.
 
-First, run the development server:
+## ✨ Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **Premium UI/UX**: Designed for luxury with smooth animations, custom SVG icons, and a glassmorphism aesthetic.
+- **Smart Product Discovery**:
+    - "Complete the Look" curated collections based on product tags.
+    - Category-based recommendations.
+    - Advanced search and filtering.
+- **Responsive Gallery**: Mobile-optimized image slider with "peek" effect for enhanced discovery.
+- **Admin Dashboard**: Full CRUD management for products, categories, brands, tags, and hero content.
+- **Image Management**: Seamless integration with ImageKit for fast, optimized image serving.
+- **WhatsApp Integration**: Direct-to-chat inquiry buttons for quick customer communication.
+- **Secure Authentication**: Admin authentication powered by NextAuth.js.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🛠️ Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Framework**: [Next.js 15 (App Router)](https://nextjs.org)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com)
+- **Database**: [Neon DB (PostgreSQL)](https://neon.tech)
+- **ORM**: [Drizzle ORM](https://orm.drizzle.team)
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/)
+- **Authentication**: [NextAuth.js v5](https://authjs.dev)
+- **Icons**: [Lucide React](https://lucide.dev)
+- **Components**: [Radix UI](https://www.radix-ui.com) & [Sonner](https://sonner.stevenly.me)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🚀 Getting Started
 
-## Learn More
+### Prerequisites
 
-To learn more about Next.js, take a look at the following resources:
+- Node.js 18+
+- A Neon DB database
+- An ImageKit project
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Installation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd imijewel
+   ```
 
-## Deploy on Vercel
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. Set up environment variables:
+   Create a `.env` file in the root and add the following:
+   ```env
+   DATABASE_URL=your_postgres_url
+   NEXTAUTH_SECRET=your_auth_secret
+   NEXTAUTH_URL=http://localhost:3000
+   
+   NEXT_PUBLIC_IMAGEKIT_URL=your_imagekit_url
+   NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY=your_public_key
+   IMAGEKIT_PRIVATE_KEY=your_private_key
+   
+   NEXT_PUBLIC_WHATSAPP=your_whatsapp_number_with_country_code
+   SEED_SECRET=your_seed_secret
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+4. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+5. Seed the admin user (first time only):
+   Send a POST request to `/api/seed` with your `x-seed-secret` header.
+
+## 📁 Project Structure
+
+- `src/app`: Next.js App Router pages and API routes.
+- `src/components`: UI components (Home, Admin, UI-kit).
+- `src/lib`: Database configuration, schemas, and utility functions.
+- `src/stores`: Zustand state stores for global data management.
+- `src/styles`: Global CSS and Tailwind configurations.
+
+## 🔒 Security Audit
+
+A recent security audit has been performed. Key findings and the improvement roadmap can be found in `src/brain/security_and_api_audit.md`.
+
+## 📄 License
+
+[MIT](LICENSE)

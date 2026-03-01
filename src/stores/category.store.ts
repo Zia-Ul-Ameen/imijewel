@@ -23,6 +23,7 @@ interface CategoryStore {
     fetchCategories: () => Promise<void>;
     fetchBrands: () => Promise<void>;
     fetchAll: () => Promise<void>;
+    setInitialData: (categories: Category[], brands: Brand[]) => void;
 }
 
 export const useCategoryStore = create<CategoryStore>((set, get) => ({
@@ -30,6 +31,10 @@ export const useCategoryStore = create<CategoryStore>((set, get) => ({
     brands: [],
     loading: false,
     hasFetched: false,
+
+    setInitialData: (categories, brands) => {
+        set({ categories, brands, hasFetched: true, loading: false });
+    },
 
     fetchCategories: async () => {
         try {

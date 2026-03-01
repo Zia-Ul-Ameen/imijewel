@@ -26,6 +26,7 @@ export default function BrandManager() {
     const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
     const [formData, setFormData] = useState({ name: '', slug: '', logo: '', logoFileId: '' });
     const [submitting, setSubmitting] = useState(false);
+    const [removedLogoIds, setRemovedLogoIds] = useState<string[]>([]);
 
     const fetchBrands = async () => {
         try {
@@ -44,6 +45,7 @@ export default function BrandManager() {
     }, []);
 
     const handleOpenDialog = (brand?: Brand) => {
+        setRemovedLogoIds([]);
         if (brand) {
             setEditingBrand(brand);
             setFormData({ name: brand.name, slug: brand.slug, logo: brand.logo || '', logoFileId: brand.logoFileId || '' });
@@ -77,9 +79,21 @@ export default function BrandManager() {
 
             if (!res.ok) throw new Error('Failed to save brand');
 
+            // Cleanup removed logos from ImageKit
+            if (removedLogoIds.length > 0) {
+                await Promise.all(removedLogoIds.map(fileId =>
+                    fetch('/api/imagekit-delete', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ fileId }),
+                    })
+                )).catch(err => console.error('Logo cleanup failed:', err));
+            }
+
             toast.success(`Brand ${editingBrand ? 'updated' : 'created'} successfully`);
             setDialogOpen(false);
             fetchBrands();
+            setRemovedLogoIds([]);
         } catch (error) {
             toast.error('Error saving brand');
         } finally {
@@ -95,6 +109,7 @@ export default function BrandManager() {
             if (logoFileId) {
                 await fetch('/api/imagekit-delete', {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ fileId: logoFileId }),
                 });
             }
@@ -208,7 +223,12 @@ export default function BrandManager() {
                                         <Image src={formData.logo} alt="Preview" fill className="object-contain" />
                                         <button
                                             type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, logo: '', logoFileId: '' }))}
+                                            onClick={() => {
+                                                if (formData.logoFileId) {
+                                                    setRemovedLogoIds(prev => [...prev, formData.logoFileId]);
+                                                }
+                                                setFormData(prev => ({ ...prev, logo: '', logoFileId: '' }));
+                                            }}
                                             className="absolute top-0 right-0 p-1 bg-red-500 text-white rounded-bl-lg"
                                         >
                                             <Trash2 className="w-3 h-3" />
