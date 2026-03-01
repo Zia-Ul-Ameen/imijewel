@@ -6,7 +6,7 @@ import { auth } from '@/lib/auth';
 
 export async function GET() {
     try {
-        const data = await db.select().from(categories).orderBy(asc(categories.name));
+        const data = await db.select().from(categories).orderBy(asc(categories.order));
         return NextResponse.json(data);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch categories' }, { status: 500 });

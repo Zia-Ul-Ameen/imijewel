@@ -17,6 +17,7 @@ interface Category {
     slug: string;
     image?: string | null;
     imageFileId?: string | null;
+    order: number;
 }
 
 export default function CategoryManager() {
@@ -24,14 +25,19 @@ export default function CategoryManager() {
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [formData, setFormData] = useState({ name: '', slug: '', image: '', imageFileId: '' });
+    const [formData, setFormData] = useState({ name: '', slug: '', image: '', imageFileId: '', order: 0 });
     const [submitting, setSubmitting] = useState(false);
 
     const fetchCategories = async () => {
         try {
             const res = await fetch('/api/categories');
             const data = await res.json();
-            setCategories(data);
+            if (Array.isArray(data)) {
+                setCategories(data);
+            } else {
+                setCategories([]);
+                if (data.error) toast.error(data.error);
+            }
         } catch (error) {
             toast.error('Failed to fetch categories');
         } finally {
@@ -46,10 +52,10 @@ export default function CategoryManager() {
     const handleOpenDialog = (category?: Category) => {
         if (category) {
             setEditingCategory(category);
-            setFormData({ name: category.name, slug: category.slug, image: category.image || '', imageFileId: category.imageFileId || '' });
+            setFormData({ name: category.name, slug: category.slug, image: category.image || '', imageFileId: category.imageFileId || '', order: category.order });
         } else {
             setEditingCategory(null);
-            setFormData({ name: '', slug: '', image: '', imageFileId: '' });
+            setFormData({ name: '', slug: '', image: '', imageFileId: '', order: categories.length });
         }
         setDialogOpen(true);
     };
@@ -123,6 +129,7 @@ export default function CategoryManager() {
                         <TableRow>
                             <TableHead>Image</TableHead>
                             <TableHead>Name</TableHead>
+                            <TableHead>Order</TableHead>
                             <TableHead>Slug</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -155,6 +162,7 @@ export default function CategoryManager() {
                                         )}
                                     </TableCell>
                                     <TableCell className="font-medium">{category.name}</TableCell>
+                                    <TableCell>{category.order}</TableCell>
                                     <TableCell className="text-zinc-500 font-mono text-xs">{category.slug}</TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
@@ -197,6 +205,19 @@ export default function CategoryManager() {
                                 readOnly
                                 className="bg-zinc-50 text-zinc-500"
                             />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label htmlFor="order">Display Order</Label>
+                            <Input
+                                id="order"
+                                type="number"
+                                value={formData.order}
+                                onChange={(e) => setFormData(prev => ({ ...prev, order: parseInt(e.target.value) || 0 }))}
+                                required
+                                placeholder="e.g. 0"
+                            />
+                            <p className="text-[10px] text-zinc-500">Lower numbers appear first (0, 1, 2...)</p>
                         </div>
 
                         <div className="space-y-2">

@@ -1,26 +1,36 @@
 "use client";
 
-import { Navbar } from "@/components/home/Navbar";
 import { Footer } from "@/components/home/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, Plus, Minus, ShoppingBag, MessageCircle, ArrowLeft } from "lucide-react";
+import { Trash2, Plus, Minus, ShoppingBag, ArrowLeft } from "lucide-react";
 import { useCartStore } from "@/stores/cart.store";
-import { toast } from "sonner";
+import { WhatsAppIcon } from "@/components/ui/WhatsAppIcon";
+import { useState } from "react";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export default function CartPage() {
     const { cart, removeFromCart, updateQuantity, clearCart, totalPrice, totalItems } = useCartStore();
+    const [isClearDialogOpen, setIsClearDialogOpen] = useState(false);
     const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP?.replace(/\D/g, '');
 
     const handleWhatsAppOrder = () => {
         if (cart.length === 0) {
-            toast.error("Your cart is empty");
             return;
         }
 
         const lines = cart.map((item) => {
             const price = item.offerPrice ?? item.price;
-            return `• *${item.name}*\n  Model: ${item.modelNumber}\n  Qty: ${item.quantity} × ₹${price.toLocaleString()} = ₹${(price * item.quantity).toLocaleString()}\n  Image: ${item.image}`;
+            return `• *${item.name}*\n  Qty: ${item.quantity} × ₹${price.toLocaleString()} = ₹${(price * item.quantity).toLocaleString()}\n  Image: ${item.image}`;
         });
 
         const total = totalPrice();
@@ -30,7 +40,7 @@ export default function CartPage() {
             `\n\n━━━━━━━━━━━━━━━\n` +
             `*Total Items:* ${totalItems()}\n` +
             `*Total Amount:* ₹${total.toLocaleString()}\n\n` +
-            `Please confirm availability and payment details. Thank you! 🙏`;
+            `Please confirm availability and payment details. Thank you!`;
 
         const encodedMessage = encodeURIComponent(message);
         const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
@@ -40,7 +50,6 @@ export default function CartPage() {
     if (cart.length === 0) {
         return (
             <main className="min-h-screen bg-zinc-50">
-                <Navbar />
                 <div className="pt-20 flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
                     <ShoppingBag className="w-16 h-16 text-zinc-300 mb-4" />
                     <h1 className="text-2xl font-black text-zinc-900 mb-2">Your cart is empty</h1>
@@ -59,20 +68,54 @@ export default function CartPage() {
 
     return (
         <main className="min-h-screen bg-zinc-50">
-            <Navbar />
             <div className="pt-20">
                 <div className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
                     {/* Header */}
-                    <div className="flex items-center gap-4 mb-6">
+                    <div className="flex items-center gap-4">
                         <Link href="/shop" className="text-zinc-500 hover:text-zinc-700 transition-colors">
                             <ArrowLeft className="w-5 h-5" />
                         </Link>
-                        <h1 className="text-2xl md:text-3xl font-black text-zinc-900">
+                        <h1 className="text-xl uppercase md:text-3xl font-medium font-sans text-center text-black tracking-wider">
                             Shopping Cart
                             <span className="ml-2 text-base font-medium text-zinc-500">({totalItems()} items)</span>
                         </h1>
                     </div>
-
+                    <Dialog open={isClearDialogOpen} onOpenChange={setIsClearDialogOpen}>
+                        <DialogTrigger asChild>
+                            <button
+                                className="text-sm text-zinc-400 hover:text-red-500 transition-colors underline mb-4 mt-2"
+                            >
+                                Clear all items
+                            </button>
+                        </DialogTrigger>
+                        <DialogContent className="sm:max-w-[425px] rounded-3xl border-zinc-100 shadow-2xl">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl font-bold text-zinc-900">Clear Shopping Cart?</DialogTitle>
+                                <DialogDescription className="text-zinc-500 pt-2">
+                                    This will remove all items from your cart. This action cannot be undone.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter className="mt-6 flex flex-row gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => setIsClearDialogOpen(false)}
+                                    className="rounded-xl border-zinc-200 w-1/2 md:w-auto text-zinc-600 hover:bg-zinc-50 h-11 font-bold"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => {
+                                        clearCart();
+                                        setIsClearDialogOpen(false);
+                                    }}
+                                    className="rounded-xl bg-red-500 hover:bg-red-600 w-1/2 md:w-auto h-11 font-bold text-white shadow-lg shadow-red-500/20"
+                                >
+                                    Confirm Clear
+                                </Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Cart Items */}
                         <div className="lg:col-span-2 space-y-3">
@@ -84,7 +127,7 @@ export default function CartPage() {
                                         className="bg-white rounded-2xl border border-zinc-100 p-4 flex gap-4 shadow-sm"
                                     >
                                         {/* Image */}
-                                        <div className="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-zinc-50">
+                                        <div className="relative w-24 h-24 shrink-0 rounded-xl overflow-hidden bg-zinc-50">
                                             {item.image ? (
                                                 <Image src={item.image} alt={item.name} fill className="object-cover" />
                                             ) : (
@@ -94,7 +137,6 @@ export default function CartPage() {
 
                                         {/* Details */}
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-[10px] text-zinc-400 font-mono">{item.modelNumber}</p>
                                             <h3 className="font-semibold text-zinc-900 text-sm line-clamp-2">{item.name}</h3>
                                             <div className="flex items-center gap-2 mt-1">
                                                 <span className="text-base font-black text-zinc-900">₹{(price * item.quantity).toLocaleString()}</span>
@@ -123,7 +165,7 @@ export default function CartPage() {
 
                                                 {/* Remove */}
                                                 <button
-                                                    onClick={() => { removeFromCart(item.id); toast.success("Removed from cart"); }}
+                                                    onClick={() => { removeFromCart(item.id); }}
                                                     className="p-2 text-zinc-400 hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
@@ -133,13 +175,6 @@ export default function CartPage() {
                                     </div>
                                 );
                             })}
-
-                            <button
-                                onClick={() => { clearCart(); toast.success("Cart cleared"); }}
-                                className="text-sm text-zinc-400 hover:text-red-500 transition-colors underline"
-                            >
-                                Clear all items
-                            </button>
                         </div>
 
                         {/* Order Summary */}
@@ -168,7 +203,7 @@ export default function CartPage() {
                                     onClick={handleWhatsAppOrder}
                                     className="w-full flex items-center justify-center gap-3 bg-[#25D366] hover:bg-[#20bc5a] text-white py-4 rounded-2xl font-bold text-base transition-all active:scale-95 shadow-lg shadow-green-500/20"
                                 >
-                                    <MessageCircle className="w-5 h-5" />
+                                    <WhatsAppIcon className="w-6 h-6 fill-white" />
                                     Order via WhatsApp
                                 </button>
 

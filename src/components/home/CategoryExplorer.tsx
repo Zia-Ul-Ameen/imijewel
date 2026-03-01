@@ -11,19 +11,14 @@ interface Category {
     image?: string | null;
 }
 
+import { useCategoryStore } from "@/stores/category.store";
+
 export const CategoryExplorer = () => {
-    const [categories, setCategories] = useState<Category[]>([]);
-    const [loading, setLoading] = useState(true);
+    const { categories, loading, fetchAll } = useCategoryStore();
 
     useEffect(() => {
-        fetch('/api/categories')
-            .then(res => res.json())
-            .then(data => {
-                if (Array.isArray(data)) setCategories(data);
-            })
-            .catch(console.error)
-            .finally(() => setLoading(false));
-    }, []);
+        fetchAll();
+    }, [fetchAll]);
 
     if (loading) {
         return (
@@ -47,7 +42,8 @@ export const CategoryExplorer = () => {
     return (
         <section className="bg-white py-8 md:py-12 border-b border-zinc-100 overflow-hidden">
             <div className="container md:mx-auto">
-                <div className="flex items-center justify-start px-4 md:justify-center gap-6 md:gap-12 overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                <h3 className="text-xl md:text-3xl font-medium font-sans px-4 text-center text-gold tracking-wider pb-3 md:pb-6">EXPLORE BY CATEGORY</h3>
+                <div className="flex items-center px-4 justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
                     {categories.map((category) => (
                         <Link
                             key={category.id}
@@ -60,7 +56,7 @@ export const CategoryExplorer = () => {
                                         src={category.image}
                                         alt={category.name}
                                         fill
-                                        className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500 scale-100 group-hover:scale-110"
+                                        className="object-cover transition-all duration-500 scale-100 group-hover:scale-110"
                                     />
                                 ) : (
                                     <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-rose-50 to-pink-100">
@@ -69,7 +65,7 @@ export const CategoryExplorer = () => {
                                 )}
                                 <div className="absolute inset-0 bg-gradient-to-tr from-black/10 to-transparent pointer-events-none" />
                             </div>
-                            <span className="text-[10px] font-black text-black uppercase tracking-widest text-center group-hover:text-rose-500 transition-colors">
+                            <span className="text-xs font-black font-medium text-black uppercase tracking-widest text-center group-hover:text-rose-500 transition-colors">
                                 {category.name}
                             </span>
                         </Link>
@@ -88,7 +84,7 @@ export const CategoryExplorer = () => {
                                 <div className="w-2 h-2 bg-zinc-400 group-hover:bg-rose-400 rounded-sm transition-colors" />
                             </div>
                         </div>
-                        <span className="text-[10px] font-black text-black uppercase tracking-widest text-center group-hover:text-rose-500 transition-colors">
+                        <span className="text-xs font-medium font-black text-black uppercase tracking-widest text-center group-hover:text-rose-500 transition-colors">
                             All
                         </span>
                     </Link>

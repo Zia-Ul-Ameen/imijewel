@@ -30,17 +30,17 @@ export const ProductGrid = ({ products, title, subtitle }: ProductGridProps) => 
                 {(title || subtitle) && (
                     <div className="text-center mb-8 md:mb-10">
                         {title && (
-                            <h2 className="text-2xl md:text-4xl font-black text-zinc-900 uppercase tracking-tight">
+                            <h2 className="text-xl uppercase md:text-3xl font-medium font-sans px-4 text-center text-gold tracking-wider">
                                 {title}
                             </h2>
                         )}
                         {subtitle && (
-                            <p className="text-zinc-500 mt-2 text-sm md:text-base">{subtitle}</p>
+                            <p className="text-zinc-500 uppercase mt-2 font-rethink tracking-wide font-medium text-xs md:text-base">{subtitle}</p>
                         )}
                         <div className="flex items-center justify-center gap-2 mt-3">
-                            <div className="h-0.5 w-12 bg-rose-300" />
-                            <div className="h-1.5 w-1.5 rounded-full bg-rose-400" />
-                            <div className="h-0.5 w-12 bg-rose-300" />
+                            <div className="h-0.5 w-12 bg-gold" />
+                            <div className="h-1.5 w-1.5 rounded-full bg-gold" />
+                            <div className="h-0.5 w-12 bg-gold" />
                         </div>
                     </div>
                 )}

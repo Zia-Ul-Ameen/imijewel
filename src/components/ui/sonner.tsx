@@ -9,9 +9,15 @@ import {
 } from "lucide-react"
 import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
+import { usePathname } from "next/navigation"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme = "system" } = useTheme()
+  const pathname = usePathname()
+
+  if (!pathname.startsWith("/admin")) {
+    return null
+  }
 
   return (
     <Sonner

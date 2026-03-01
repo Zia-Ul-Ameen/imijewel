@@ -25,6 +25,9 @@ export async function GET(request: Request) {
             );
         }
         if (categoryId) conditions.push(eq(products.categoryId, categoryId));
+        if (tagId) {
+            conditions.push(sql`${products.tagIds} ? ${tagId}`);
+        }
         if (brandId) conditions.push(eq(products.brandId, brandId));
         if (isActive !== null) conditions.push(eq(products.isActive, isActive === 'true'));
 
@@ -40,6 +43,9 @@ export async function GET(request: Request) {
                 categoryId: products.categoryId,
                 brandId: products.brandId,
                 tagIds: products.tagIds,
+                features: products.features,
+                metaTitle: products.metaTitle,
+                metaDescription: products.metaDescription,
                 isActive: products.isActive,
                 stock: products.stock,
                 createdAt: products.createdAt,
@@ -70,7 +76,7 @@ export async function POST(request: Request) {
 
     try {
         const body = await request.json();
-        const { name, modelNumber, description, price, offerPrice, images, categoryId, brandId, tagIds, isActive, stock } = body;
+        const { name, modelNumber, description, price, offerPrice, images, categoryId, brandId, tagIds, isActive, stock, features, metaTitle, metaDescription } = body;
 
         if (!name || !modelNumber || !price) {
             return NextResponse.json({ error: 'Name, model number and price are required' }, { status: 400 });
@@ -88,6 +94,9 @@ export async function POST(request: Request) {
             tagIds: tagIds || [],
             isActive: isActive ?? true,
             stock: stock ?? 0,
+            features: features || null,
+            metaTitle: metaTitle || null,
+            metaDescription: metaDescription || null,
         }).returning();
 
         return NextResponse.json(created, { status: 201 });

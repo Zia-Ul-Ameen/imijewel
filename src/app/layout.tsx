@@ -34,6 +34,8 @@ export const metadata: Metadata = {
   },
 };
 
+import { Navbar } from "@/components/home/Navbar";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -43,6 +45,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${albertSans.variable} ${rethinkSans.variable} antialiased font-albert`}>
         <Providers>
+          <Navbar />
           {children}
         </Providers>
         <Toaster position="top-right" richColors />

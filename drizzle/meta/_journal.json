@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1772319961475,
+      "tag": "0000_add_category_order",
+      "breakpoints": true
+    }
+  ]
+}

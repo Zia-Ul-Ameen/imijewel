@@ -1,5 +1,4 @@
 import { HeroSlider } from "@/components/home/HeroSlider";
-import { Navbar } from "@/components/home/Navbar";
 import { FeaturesBar } from "@/components/home/FeaturesBar";
 import { CategoryExplorer } from "@/components/home/CategoryExplorer";
 import { ProductGrid } from "@/components/home/ProductGrid";
@@ -41,9 +40,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-svh bg-black selection:bg-gold/30 selection:text-gold">
-      <Navbar />
       <HeroSlider initialData={heroData} />
-      <FeaturesBar />
+      {/* <FeaturesBar /> */}
       <CategoryExplorer />
       <ProductGrid
         products={products}

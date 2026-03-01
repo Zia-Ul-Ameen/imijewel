@@ -11,9 +11,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Badge } from '@/components/ui/badge';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import { IKUpload } from 'imagekitio-next';
+import { cn } from '@/lib/utils';
 
 interface Product {
     id: string;
@@ -25,9 +30,12 @@ interface Product {
     images: { url: string; fileId: string }[];
     categoryId: string | null;
     brandId: string | null;
-    tags: string[];
+    tagIds: string[];
     stock: number;
     isActive: boolean;
+    features?: string | null;
+    metaTitle?: string | null;
+    metaDescription?: string | null;
     categoryName?: string;
     brandName?: string;
 }
@@ -59,9 +67,12 @@ export default function ProductsPage() {
         images: [] as { url: string; fileId: string }[],
         categoryId: 'none',
         brandId: 'none',
-        tags: [] as string[],
+        tagIds: [] as string[],
         stock: 0,
         isActive: true,
+        features: '',
+        metaTitle: '',
+        metaDescription: '',
     });
 
     const fetchProducts = async () => {
@@ -114,9 +125,12 @@ export default function ProductsPage() {
                 images: product.images || [],
                 categoryId: product.categoryId || 'none',
                 brandId: product.brandId || 'none',
-                tags: product.tags || [],
+                tagIds: product.tagIds || [],
                 stock: product.stock,
                 isActive: product.isActive,
+                features: product.features || '',
+                metaTitle: product.metaTitle || '',
+                metaDescription: product.metaDescription || '',
             });
         } else {
             setEditingProduct(null);
@@ -129,9 +143,12 @@ export default function ProductsPage() {
                 images: [],
                 categoryId: 'none',
                 brandId: 'none',
-                tags: [],
+                tagIds: [],
                 stock: 0,
                 isActive: true,
+                features: '',
+                metaTitle: '',
+                metaDescription: '',
             });
         }
         setDialogOpen(true);
@@ -199,9 +216,9 @@ export default function ProductsPage() {
     const handleTagToggle = (tagId: string) => {
         setFormData(prev => ({
             ...prev,
-            tags: prev.tags.includes(tagId)
-                ? prev.tags.filter(t => t !== tagId)
-                : [...prev.tags, tagId]
+            tagIds: prev.tagIds.includes(tagId)
+                ? prev.tagIds.filter(t => t !== tagId)
+                : [...prev.tagIds, tagId]
         }));
     };
 
@@ -417,19 +434,91 @@ export default function ProductsPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Tags</Label>
-                                    <div className="p-3 border border-zinc-200 rounded-xl grid grid-cols-2 gap-2 max-h-32 overflow-y-auto bg-zinc-50/50">
-                                        {tags.map(t => (
-                                            <div key={t.id} className="flex items-center space-x-2">
-                                                <Checkbox id={`tag-${t.id}`} checked={formData.tags.includes(t.id)} onCheckedChange={() => handleTagToggle(t.id)} />
-                                                <label htmlFor={`tag-${t.id}`} className="text-xs font-medium cursor-pointer">{t.name}</label>
-                                            </div>
-                                        ))}
-                                        {tags.length === 0 && <p className="text-[10px] text-zinc-400 col-span-2">No tags available</p>}
-                                    </div>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className="w-full justify-between rounded-xl h-auto min-h-[44px] py-2 px-3 border-zinc-200 bg-white hover:bg-zinc-50"
+                                            >
+                                                <div className="flex flex-wrap gap-1">
+                                                    {formData.tagIds.length > 0 ? (
+                                                        formData.tagIds.map(id => {
+                                                            const tag = tags.find(t => t.id === id);
+                                                            return tag ? (
+                                                                <Badge
+                                                                    key={id}
+                                                                    variant="secondary"
+                                                                    className="rounded-lg bg-rose-50 text-rose-600 border-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-tight flex items-center gap-1"
+                                                                >
+                                                                    {tag.name}
+                                                                    <X
+                                                                        className="w-3 h-3 cursor-pointer hover:text-rose-700"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleTagToggle(id);
+                                                                        }}
+                                                                    />
+                                                                </Badge>
+                                                            ) : null;
+                                                        })
+                                                    ) : (
+                                                        <span className="text-zinc-400 font-normal">Select tags...</span>
+                                                    )}
+                                                </div>
+                                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50 text-zinc-400" />
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0 rounded-xl border-zinc-200 shadow-xl" align="start">
+                                            <Command className="rounded-xl">
+                                                <CommandInput placeholder="Search tags..." className="h-11 border-none focus:ring-0" />
+                                                <CommandList className="max-h-48 overflow-y-auto p-1">
+                                                    <CommandEmpty className="py-6 text-center text-sm text-zinc-500">No tag found.</CommandEmpty>
+                                                    <CommandGroup>
+                                                        {tags.map((tag) => (
+                                                            <CommandItem
+                                                                key={tag.id}
+                                                                value={tag.name}
+                                                                onSelect={() => handleTagToggle(tag.id)}
+                                                                className="rounded-lg py-2 px-3 cursor-pointer aria-selected:bg-zinc-100"
+                                                            >
+                                                                <Check
+                                                                    className={cn(
+                                                                        "mr-2 h-4 w-4 text-rose-500",
+                                                                        formData.tagIds.includes(tag.id) ? "opacity-100" : "opacity-0"
+                                                                    )}
+                                                                />
+                                                                <span className="text-sm font-medium text-zinc-700">{tag.name}</span>
+                                                            </CommandItem>
+                                                        ))}
+                                                    </CommandGroup>
+                                                </CommandList>
+                                            </Command>
+                                        </PopoverContent>
+                                    </Popover>
                                 </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="description">Product Description</Label>
-                                    <Textarea id="description" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} rows={4} placeholder="Detailed product specifications..." />
+                                    <Textarea id="description" value={formData.description} onChange={e => setFormData(p => ({ ...p, description: e.target.value }))} rows={3} placeholder="Detailed product specifications..." />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="features">Product Features (key: value; format)</Label>
+                                    <Textarea id="features" value={formData.features} onChange={e => setFormData(p => ({ ...p, features: e.target.value }))} rows={3} placeholder="size: 22mm; quality: top;" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* SEO Info */}
+                        <div className="space-y-4 border-t border-zinc-100 pt-6">
+                            <Label className="text-base font-bold text-zinc-900">SEO Settings</Label>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="metaTitle">Meta Title</Label>
+                                    <Input id="metaTitle" value={formData.metaTitle} onChange={e => setFormData(p => ({ ...p, metaTitle: e.target.value }))} placeholder="SEO optimized title" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="metaDescription">Meta Description</Label>
+                                    <Textarea id="metaDescription" value={formData.metaDescription} onChange={e => setFormData(p => ({ ...p, metaDescription: e.target.value }))} rows={2} placeholder="Brief summary for search engines" />
                                 </div>
                             </div>
                         </div>

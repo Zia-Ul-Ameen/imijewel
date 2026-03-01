@@ -39,6 +39,7 @@ export const categories = pgTable('categories', {
     slug: text('slug').notNull().unique(),
     image: text('image'),  // ImageKit URL
     imageFileId: text('image_file_id'), // for deletion
+    order: integer('order').default(0).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
@@ -62,6 +63,9 @@ export const products = pgTable('products', {
     categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
     brandId: uuid('brand_id').references(() => brands.id, { onDelete: 'set null' }),
     tagIds: jsonb('tag_ids').$type<string[]>().default([]).notNull(),
+    features: text('features'), // semicolon separated list or raw text
+    metaTitle: text('meta_title'),
+    metaDescription: text('meta_description'),
     isActive: boolean('is_active').default(true).notNull(),
     stock: integer('stock').default(0).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
