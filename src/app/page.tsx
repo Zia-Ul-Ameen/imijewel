@@ -1,33 +1,57 @@
 import { HeroSlider } from "@/components/home/HeroSlider";
-import { FeaturesBar } from "@/components/home/FeaturesBar";
 import { CategoryExplorer } from "@/components/home/CategoryExplorer";
 import { ProductGrid } from "@/components/home/ProductGrid";
 import { Footer } from "@/components/home/Footer";
+import { db } from "@/lib/db";
+import { heroContent, products, categories, brands } from "@/lib/schema";
+import { eq, asc, desc } from "drizzle-orm";
 
 export const revalidate = 60;
 
 async function getHeroContent() {
   try {
-    const res = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/hero-content`, {
-      next: { revalidate: 60 },
-    });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
+    return await db
+      .select()
+      .from(heroContent)
+      .where(eq(heroContent.isActive, true))
+      .orderBy(asc(heroContent.order));
+  } catch (error) {
+    console.error("Error fetching hero content:", error);
     return [];
   }
 }
 
 async function getFeaturedProducts() {
   try {
-    const res = await fetch(
-      `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/products?isActive=true&limit=10`,
-      { next: { revalidate: 60 } }
-    );
-    if (!res.ok) return [];
-    const data = await res.json();
-    return Array.isArray(data) ? data : (data.products || []);
-  } catch {
+    return await db
+      .select({
+        id: products.id,
+        name: products.name,
+        modelNumber: products.modelNumber,
+        description: products.description,
+        price: products.price,
+        offerPrice: products.offerPrice,
+        images: products.images,
+        categoryId: products.categoryId,
+        brandId: products.brandId,
+        tagIds: products.tagIds,
+        features: products.features,
+        metaTitle: products.metaTitle,
+        metaDescription: products.metaDescription,
+        isActive: products.isActive,
+        stock: products.stock,
+        createdAt: products.createdAt,
+        categoryName: categories.name,
+        brandName: brands.name,
+      })
+      .from(products)
+      .leftJoin(categories, eq(products.categoryId, categories.id))
+      .leftJoin(brands, eq(products.brandId, brands.id))
+      .where(eq(products.isActive, true))
+      .orderBy(desc(products.createdAt))
+      .limit(10);
+  } catch (error) {
+    console.error("Error fetching featured products:", error);
     return [];
   }
 }
